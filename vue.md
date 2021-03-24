@@ -37,3 +37,6 @@ crm学习法， 安装学习vue
 
 ## 2. vue实例
 
+封装数据n, 以及相关所有操作
+
+![image-20210324154720130](https://i.loli.net/2021/03/24/OybqzpnGHle36Kr.png)
