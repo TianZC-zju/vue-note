@@ -43,11 +43,11 @@ crm学习法， 安装学习vue
 
 ****
 
-***options是什么?***
+### 2.1 options相关概念
 
 选项. 是vue构造函数生成实例的参数.
 
-***options包含哪些?***
+#### 2.1.1 options包括
 
 * 数据：data、props、propsData、computed、methods , watch
 * DOM
@@ -60,7 +60,7 @@ crm学习法， 安装学习vue
 * 组合
 * 其他: 先不看
 
-***options学习的重点有哪些?***
+#### 2.1.2 options学习的重点有哪些?
 
 ![image-20210324162254890](https://i.loli.net/2021/03/24/cSIQZMVqByx4b83.png)
 
@@ -68,7 +68,7 @@ crm学习法， 安装学习vue
 
 ****
 
-***options开始学习:***
+### 2.2 options开始学习
 
 1. `el`: main.js如下:
 
@@ -348,4 +348,139 @@ crm学习法， 安装学习vue
    </script>
    ```
 
-   
+## 3. 数据响应式
+
+### 3.1 get 和 set
+
+**情况一:** 当直接修改自定义的外部数据依旧能触发对页面的重新渲染
+
+```js
+const myData = {
+  n: 0
+}
+// console.log(myData) // 本节课精髓
+
+new Vue({
+  data: myData,
+  template: `
+    <div>{{n}}</div>
+  `
+}).$mount("#app");
+
+setTimeout(()=>{
+  myData.n += 10
+  // console.log(myData) // 本节课精髓
+},3000)
+```
+
+> 3秒之后, 页面从0变成了n
+
+**情况二:**3秒后log同一个数据,结果完全不同
+
+```js
+const myData = {
+  n: 0
+}
+ console.log(myData) // 第一次log
+
+new Vue({
+  data: myData,
+  template: `
+    <div>{{n}}</div>
+  `
+}).$mount("#app");
+
+setTimeout(()=>{
+  myData.n += 10
+   console.log(myData) // 第二次log
+},3000)
+```
+
+> 结果如下:
+
+![image-20210325170624411](https://i.loli.net/2021/03/25/u9o3wpa6gVmkvD4.png)
+
+***
+
+***什么是get?***
+
+为了不加括号执行一个函数
+
+```js
+let obj0 = {
+  姓: "高",
+  名: "圆圆",
+  age: 18
+};
+
+// 需求一，得到姓名
+
+let obj1 = {
+  姓: "高",
+  名: "圆圆",
+  姓名() {
+    return this.姓 + this.名;
+  },
+  age: 18
+};
+
+console.log("需求一：" + obj1.姓名());
+// 姓名后面的括号能删掉吗？不能，因为它是函数
+// 怎么去掉括号？
+
+// 需求二，姓名不要括号也能得出值
+
+let obj2 = {
+  姓: "高",
+  名: "圆圆",
+  get 姓名() {
+    return this.姓 + this.名;
+  },
+  age: 18
+};
+
+console.log("需求二：" + obj2.姓名);
+```
+
+> "姓名" 就称为计算属性, 经过计算才能得到的值
+
+***
+
+***什么是set?***
+
+不加括号就修改类的属性, 用**类似于属性赋值的方法**
+
+```js
+// 需求三：姓名可以被写
+
+let obj3 = {
+  姓: "高",
+  名: "圆圆",
+  get 姓名() {
+    return this.姓 + this.名;
+  },
+  set 姓名(xxx){
+    this.姓 = xxx[0]
+    this.名 = xxx.slice(1)
+  },
+  age: 18
+};
+
+obj3.姓名 = '高媛媛'
+
+console.log(`需求三：姓 ${obj3.姓}，名 ${obj3.名}`)
+
+// 总结：setter 就是这样用的。用 = xxx 触发 set 函数
+```
+
+***
+
+***最后打印object3, 会发生什么?***
+
+![image-20210325173720925](vue.assets/image-20210325173720925.png)
+
+
+
+>  "姓"和"名"都是正常属性, 而"姓名"被`(...)`代替
+
+因为"姓名", 不是正常的属性, 而是被`get`,`set`改造过的属性 
