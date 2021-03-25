@@ -477,7 +477,7 @@ console.log(`需求三：姓 ${obj3.姓}，名 ${obj3.名}`)
 
 ***最后打印object3, 会发生什么?***
 
-![image-20210325173720925](vue.assets/image-20210325173720925.png)
+![image-20210325173720925](https://i.loli.net/2021/03/25/ZvTnXYJiCBodjWO.png)
 
 
 
