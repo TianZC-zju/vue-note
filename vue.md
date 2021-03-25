@@ -185,6 +185,13 @@ crm学习法， 安装学习vue
 
    vue实例是**由`new Vue()`创建出来的**, vue实例**不包含挂载点**
 
+   实例变组件: 
+
+   1. 复制实例中的options
+   2. 组件中新建`template`, `script`,`style`, 标签
+   3. 将复制的内容放到组件的`script`中
+   4. 将`script`中的, template内容剪切到`template`标签中
+
    **如何使用vue组件?**
 
    ```js
@@ -254,6 +261,91 @@ crm学习法， 安装学习vue
      }
    ```
 
+   第三种方法:
+
+   ```js
+   new Vue(
+   +    components:{
+   +      Frank:{
+   +    	data(){
+   +    		return{n:0}
+   +		},
+   +        template:`
+   +			<div>Frank's n: {{n}}</div>
+   + `    
+   +   }
+   +    },
+      data(){
+       return{
+         n:0, 
+         array: [1, 2, 3, 4]
+       }
+      },
+      template:`
+   	<div>
+   	{{n}}
+   	<button @click="add">+1</button>
+   	<hr>
+   +   <Demo2/>
+   	{{filter()}}
+   </div>
+   `,
+     methods:{
+         add(){
+             this.n += 1
+         },
+         filter(){
+             return this.array.filter(i=>i%2===0)
+         }    
+     }
+   ```
+
    
+
+5. `生命周期函数`:直接写在options的第一层
+
+   * create: 出现内内存中, 不在页面中
+   * mounted: 出现在页面中
+   * destroyed: 从页面中消亡
+
+6. `props`: 接收外部属性
+
+   **加冒号代表后面的是代码**
+
+   第一行传的是**字符n**, 第二行传的是**变量n**, 第三行传的是**函数add**
+
+   ```js
+   tmplate:`
+   	<div>
+   		<Demo message="n" />
+   		<Demo :message="n"/>
+   		<Demo :fn="add"/>
+   	</div>
+   `,
+   methods:{
+       add(){},
+       toggle(){
+           this.visible = {this.visible}
+       }
+   }    
+   ```
+
+   接收参数:
+
+   ```html
+   <template>
+   	<div class="red">
+       	<button @click="fn">
+               call fn
+           </button>
+           </button>
+       </div>
+   </template>
+   <script>
+   	export default{
+           props:{"message", "fn"}
+       }
+   </script>
+   ```
 
    
