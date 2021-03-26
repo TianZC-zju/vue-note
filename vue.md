@@ -484,3 +484,166 @@ console.log(`需求三：姓 ${obj3.姓}，名 ${obj3.名}`)
 >  "姓"和"名"都是正常属性, 而"姓名"被`(...)`代替
 
 因为"姓名", 不是正常的属性, 而是被`get`,`set`改造过的属性 
+
+### 3.2 Obeject.defineProperty
+
+***如何在对象定义结束之后再加上虚拟属性?***
+
+```js
+var _xx = 0
+Object.defineProperty(obj3, 'xxx',{
+    get(){
+        return _xx
+    },
+    set(value){
+        _xxx = value
+    }
+})
+```
+
+### 3.3 代理和监听
+
+***
+
+***需求一: 如何做到在对象定义之后加上虚拟属性?***
+
+```js
+// 需求一：用 Object.defineProperty 定义 n
+let data1 = {}
+
+Object.defineProperty(data1, 'n', {
+  value: 0
+})
+
+console.log(`需求一：${data1.n}`)
+```
+
+***
+
+***需求二: 监控属性n的写入, 当写入的值小于0就无效***
+
+在`set`里面进行监控
+
+```js
+let data2 = {}
+
+data2._n = 0 // _n 用来偷偷存储 n 的值
+
+Object.defineProperty(data2, 'n', {
+  get(){
+    return this._n
+  },
+  set(value){
+    if(value < 0) return
+    this._n = value
+  }
+})
+
+console.log(`需求二：${data2.n}`)
+data2.n = -1
+console.log(`需求二：${data2.n} 设置为 -1 失败`)
+data2.n = 1
+console.log(`需求二：${data2.n} 设置为 1 成功`)
+```
+
+***
+
+***需求三: 如何在上面的需求上不暴露_n?***
+
+```js
+// 需求三：使用代理
+
+let data3 = proxy({ data:{n:0} }) // 括号里是匿名对象，无法访问
+
+function proxy({data}/* 解构赋值，别TM老问 */){
+  const obj = {}
+  // 这里的 'n' 写死了，理论上应该遍历 data 的所有 key，这里做了简化
+  // 因为我怕你们看不懂
+  Object.defineProperty(obj, 'n', { 
+    get(){
+      return data.n
+    },
+    set(value){
+      if(value<0)return
+      data.n = value
+    }
+  })
+  return obj // obj 就是代理
+}
+
+// data3 就是 obj
+console.log(`需求三：${data3.n}`)
+data3.n = -1
+console.log(`需求三：${data3.n}，设置为 -1 失败`)
+data3.n = 1
+console.log(`需求三：${data3.n}，设置为 1 成功`)
+```
+
+***
+
+***需求四, 五: 如何在上面的基础上,如果括号里面传入的是有名对象?***
+
+```js
+// 需求五：就算用户擅自修改 myData，也要拦截他
+
+let myData5 = {n:0}
+let data5 = proxy2({ data:myData5 }) // 括号里是匿名对象，无法访问
+
+function proxy2({data}/* 解构赋值，别TM老问 */){
+  // 这里的 'n' 写死了，理论上应该遍历 data 的所有 key，这里做了简化
+  // 因为我怕你们看不懂
+  let value = data.n //这里保存了n值, 但是之后的会新生成虚拟属性n, 会代替这个n值
+  Object.defineProperty(data, 'n', {
+    get(){
+      return value
+    },
+    set(newValue){
+      if(newValue<0)return
+      value = newValue
+    }
+  })
+  // 就加了上面几句，这几句话会监听 data
+
+  const obj = {}
+  Object.defineProperty(obj, 'n', {
+    get(){
+      return data.n
+    },
+    set(value){
+      if(value<0)return//这句话多余了
+      data.n = value
+    }
+  })
+  
+  return obj // obj 就是代理
+}
+
+// data3 就是 obj
+console.log(`需求五：${data5.n}`)
+myData5.n = -1
+console.log(`需求五：${data5.n}，设置为 -1 失败了`)
+myData5.n = 1
+console.log(`需求五：${data5.n}，设置为 1 成功了`)
+```
+
+**小结**
+
+**·Object.defineProperty**
+
+* 可以给对象添加属性value
+* 可以给对象添加getter/setter
+* getter/setter用于对属性的读写进行监控
+
+**啥是代理（设计模式）**
+
+* 对myData对象的属性读写，全权由另一个对象vm负责
+  那么vm就是myData的代理（类比房东租房）
+  比如myData.n不用，偏要用vm.n来操作myData.n
+
+**vm=new Vue({data:myData})**
+
+* 一、会让vm成为myData的代理（proxy)
+* 二、会对myData的所有属性进行监控
+* 为什么要监控，为了防止myData的属性变了，vm不知道
+  vm知道了又如何？知道属性变了就可以调用render(data)呀！
+  Ul=render(data)
